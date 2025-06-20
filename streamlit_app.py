@@ -1,46 +1,42 @@
 import streamlit as st
 import requests
+import urllib3
 
-# CONFIGURE AQUI: URL do webhook do n8n
-N8N_WEBHOOK_URL = "https://n8n.diferro.com.br:5678/webhook-test/chat-coramdeo"
+# Desativa warnings de SSL inseguros (somente para testes)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# Título e instruções
-st.title("💬 Chatbot via n8n")
-st.write(
-    "Este chatbot usa um webhook do n8n para gerar respostas com IA. "
-    "Certifique-se que o fluxo do n8n está ativo e configurado para receber mensagens no formato correto."
-)
+# URL do webhook do n8n
+WEBHOOK_URL = "https://n8n.diferro.com.br:5678/webhook/chat-coramdeo"
 
-# Estado da conversa
+st.title("💬 Chat com a IA via n8n")
+
+# Inicializa o histórico de mensagens
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Exibe histórico da conversa
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+# Exibe o histórico de conversa
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-# Campo de entrada do usuário
+# Campo de entrada de mensagem
 if prompt := st.chat_input("Digite sua pergunta"):
 
-    # Exibe mensagem do usuário
+    # Adiciona pergunta do usuário ao histórico
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Envia para o webhook do n8n
     try:
-        response = requests.post(
-            N8N_WEBHOOK_URL,
-            json={"messages": st.session_state.messages},  # Envia histórico de conversa
-            timeout=30
-        )
+        # Envia apenas a última pergunta para o webhook, no formato esperado: {"pergunta": ...}
+        response = requests.post(WEBHOOK_URL, json={"pergunta": prompt}, verify=False)
         response.raise_for_status()
-        ai_reply = response.json().get("reply", "❌ Resposta inválida do servidor.")
-    except Exception as e:
-        ai_reply = f"❌ Erro na requisição: {e}"
+        resposta = response.json().get("resposta", "⚠️ Resposta não encontrada.")
 
-    # Exibe e armazena resposta
+    except Exception as e:
+        resposta = f"❌ Erro na requisição: {e}"
+
+    # Exibe e armazena resposta da IA
     with st.chat_message("assistant"):
-        st.markdown(ai_reply)
-    st.session_state.messages.append({"role": "assistant", "content": ai_reply})
+        st.markdown(resposta)
+    st.session_state.messages.append({"role": "assistant", "content": resposta})
