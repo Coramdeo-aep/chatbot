@@ -1,42 +1,46 @@
 import streamlit as st
 import requests
+import uuid
 import urllib3
 
-# Desativa warnings de SSL inseguros (somente para testes)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# URL do webhook do n8n
-WEBHOOK_URL = "https://n8n.diferro.com.br:5678/webhook-test/chat-coramdeo"
+# URL do endpoint do agente de chat
+CHAT_ENDPOINT = "https://n8n.diferro.com.br:5678/webhook/0731a047-3e95-4a35-8a56-d8e9f999ed5c/chat"  # atualize o ID
 
-st.title("💬 Chat com a IA via n8n")
+# Inicializa sessão única de chat
+if "chat_id" not in st.session_state:
+    st.session_state.chat_id = str(uuid.uuid4())  # gera um ID único
 
-# Inicializa o histórico de mensagens
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Exibe o histórico de conversa
+st.title("💬 Chat com a IA (estilo n8n/chat)")
+
+# Mostra histórico
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# Campo de entrada de mensagem
+# Entrada do usuário
 if prompt := st.chat_input("Digite sua pergunta"):
-
-    # Adiciona pergunta do usuário ao histórico
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     try:
-        # Envia apenas a última pergunta para o webhook, no formato esperado: {"pergunta": ...}
-        response = requests.post(WEBHOOK_URL, json={"pergunta": prompt}, verify=False)
+        payload = {
+            "chat_id": st.session_state.chat_id,
+            "message": prompt
+        }
+        response = requests.post(CHAT_ENDPOINT, json=payload, verify=False)
         response.raise_for_status()
-        resposta = response.json().get("resposta", "⚠️ Resposta não encontrada.")
+
+        resposta = response.json()["answers"][0]["message"]  # padrão do n8n/chat
 
     except Exception as e:
-        resposta = f"❌ Erro na requisição: {e}"
+        resposta = f"❌ Erro: {e}"
 
-    # Exibe e armazena resposta da IA
+    st.session_state.messages.append({"role": "assistant", "content": resposta})
     with st.chat_message("assistant"):
         st.markdown(resposta)
-    st.session_state.messages.append({"role": "assistant", "content": resposta})
