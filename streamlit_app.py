@@ -7,7 +7,7 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # URL do webhook do n8n compatível com @n8n/chat
-CHAT_URL = "https://n8n.diferro.com.br:5678/webhook/0731a047-3e95-4a35-8a56-d8e9f999ed5c/chat"  # 🔁 Substitua pelo seu webhook real
+CHAT_URL = "https://n8n.diferro.com.br:5678/webhook-test/834f1870-5d63-4dcb-a31f-a4d69b4200bb"  # 🔁 Substitua pelo seu webhook real
 
 st.set_page_config(page_title="Chat Coram Deo", page_icon="💬")
 st.title("💬 Chat com a IA via n8n/chat")
