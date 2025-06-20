@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 # CONFIGURE AQUI: URL do webhook do n8n
-N8N_WEBHOOK_URL = "https://n8n.diferro.com.br:5678/webhook/chat-coramdeo"
+N8N_WEBHOOK_URL = "https://n8n.diferro.com.br:5678/webhook-test/chat-coramdeo"
 
 # Título e instruções
 st.title("💬 Chatbot via n8n")
