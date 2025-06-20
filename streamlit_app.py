@@ -6,7 +6,7 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # URL do webhook do n8n
-WEBHOOK_URL = "https://n8n.diferro.com.br:5678/webhook/chat-coramdeo"
+WEBHOOK_URL = "https://n8n.diferro.com.br:5678/webhook-test/chat-coramdeo"
 
 st.title("💬 Chat com a IA via n8n")
 
